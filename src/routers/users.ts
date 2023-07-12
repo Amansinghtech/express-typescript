@@ -1,43 +1,38 @@
 import { Router } from 'express'
+import UserSchema, { User } from '../models/users'
 const router = Router()
 
-type User = {
-	name: string
-	age: number
-}
+router.post('/', async (req, res) => {
+	try {
+		const { name, password, email, username } = req.body as User
 
-const users: User[] = [
-	{
-		age: 20,
-		name: 'John',
-	},
-	{
-		age: 21,
-		name: 'Jane',
-	},
-]
+		if (!password || !username) {
+			return res
+				.status(400)
+				.json({ message: 'password and username are required' })
+		}
 
-router.get('/', (req, res) => {
-	return res.json(users)
-})
+		const user = await UserSchema.findOne({ username })
 
-router.post('/', (req, res) => {
-	const { name, age } = req.body as User
-	users.push({ name, age })
-	// console.log(users)
-	return res.json({ message: 'hello from users route, but ye wala alag h' })
-})
+		if (user) {
+			return res.status(400).json({ message: 'username already exists' })
+		}
 
-router.delete('/:name', (req, res) => {
-	const name = req.params.name
+		const newUser = await UserSchema.create({
+			name,
+			password,
+			email,
+			username,
+		})
 
-	const index = users.findIndex((user) => user.name === name)
-	if (index === -1) {
-		return res.status(404).json({ message: 'user not found' })
+		return res.json(newUser.toObject())
+	} catch (error) {
+		console.log(error)
+		return res.status(500).json({ message: 'something went wrong' })
 	}
 
-	users.splice(index, 1)
-	return res.json({ message: 'user deleted' })
+	// console.log(users)
+	// return res.json({ message: 'hello from users route, but ye wala alag h' })
 })
 
 export default router
