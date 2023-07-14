@@ -18,7 +18,9 @@ export function createAccessToken<PayloadT extends object>(
 ): string {
 	const iat = Math.floor(Date.now() / 1000) // Issued At Time in seconds
 
-	return jwt.sign({ ...payload, iat }, env.secret, { expiresIn: '15m' })
+	return jwt.sign({ ...payload, iat }, env.secret, {
+		expiresIn: env.AccessTokenExpiry,
+	})
 }
 
 type AccessTokenPayload<T> = {
