@@ -7,7 +7,7 @@ const port = 3000
 app.use(express.json())
 const mongoURI = process.env.MONGO_URI
 
-console.log(mongoURI)
+// console.log(mongoURI)
 
 // use the users route
 app.use('/users', UsersRoute)
