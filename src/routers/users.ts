@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import UserSchema, { User } from '../models/users'
-import { createHash, verifyHash } from '../controller/auth'
+import { createAccessToken, createHash, verifyHash } from '../controller/auth'
 
 interface LoginInput {
 	username?: string
@@ -94,6 +94,9 @@ router.post('/signup', async (req, res) => {
 				email: newUser.email,
 				phone: newUser.phone,
 			},
+			accessToken: createAccessToken({
+				username: newUser.username,
+			}),
 		})
 	} catch (error) {
 		console.log(error)
@@ -125,6 +128,7 @@ router.post('/login', async (req, res) => {
 
 		// 3.2 if password is correct then return the user with accessToken
 
+		// 4. return the user and accesstoken
 		return res.json({
 			message: 'user logged in successfully',
 			payload: {
@@ -132,10 +136,11 @@ router.post('/login', async (req, res) => {
 				fullname: user.fullname,
 				email: user.email,
 				phone: user.phone,
-				accessToken: 'this is a dummy access token',
+				accessToken: createAccessToken({
+					username: user.username,
+				}),
 			},
 		})
-		// 4. return the user and accesstoken
 	} catch (error) {
 		console.log(error)
 		return res.status(500).json({ message: 'Internal Server Error' })
