@@ -1,6 +1,11 @@
 import { Router } from 'express'
 import UserSchema, { User } from '../models/users'
-import { createAccessToken, createHash, verifyHash } from '../controller/auth'
+import {
+	checkAccessToken,
+	createAccessToken,
+	createHash,
+	verifyHash,
+} from '../controller/auth'
 
 interface LoginInput {
 	username?: string
@@ -143,6 +148,26 @@ router.post('/login', async (req, res) => {
 		})
 	} catch (error) {
 		console.log(error)
+		return res.status(500).json({ message: 'Internal Server Error' })
+	}
+})
+
+router.get('/verifyToken', async (req, res) => {
+	try {
+		const authorization = req.headers.authorization
+		if (!authorization)
+			return res
+				.status(401)
+				.json({ message: 'authorization header is required' })
+
+		const result = checkAccessToken(authorization)
+
+		if (!result.success)
+			return res.status(401).json({ message: result.message })
+
+		console.log(result)
+		return res.json({ message: 'hello from verifyToken route' })
+	} catch (error) {
 		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 })

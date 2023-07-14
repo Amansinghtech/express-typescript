@@ -28,3 +28,25 @@ export function createAccessToken(payload: object): string {
 	)
 	return token
 }
+
+type AccessTokenPayload<T> = {
+	success: boolean
+	message: string
+	decoded?: T
+}
+
+export function checkAccessToken<T>(token: string): AccessTokenPayload<T> {
+	try {
+		const decoded = jwt.verify(token, env.secret)
+		return {
+			success: true,
+			message: 'Token is valid',
+			decoded: decoded as T,
+		}
+	} catch (error: any) {
+		return {
+			success: false,
+			message: error.name,
+		}
+	}
+}
