@@ -7,40 +7,8 @@ export async function createHash(password: string): Promise<string> {
 }
 
 export async function verifyHash(
-	hash: string,
-	password: string
+	password: string,
+	hash: string
 ): Promise<boolean> {
-	return await argon2.verify(hash, password)
-}
-
-export function createAccessToken<PayloadT extends object>(
-	payload: PayloadT
-): string {
-	const iat = Math.floor(Date.now() / 1000) // Issued At Time in seconds
-
-	return jwt.sign({ ...payload, iat }, env.secret, {
-		expiresIn: env.AccessTokenExpiry,
-	})
-}
-
-type AccessTokenPayload<T> = {
-	success: boolean
-	message: string
-	decoded?: T
-}
-
-export function checkAccessToken<T>(token: string): AccessTokenPayload<T> {
-	try {
-		const decoded = jwt.verify(token, env.secret)
-		return {
-			success: true,
-			message: 'Token is valid',
-			decoded: decoded as T,
-		}
-	} catch (error: any) {
-		return {
-			success: false,
-			message: error.name,
-		}
-	}
+	return await argon2.verify(password, hash)
 }

@@ -1,14 +1,15 @@
 import mongoose, { Schema, Document } from 'mongoose'
 
 export interface User extends Document {
-	name: string
+	fullname: string
 	username: string
 	email: string
 	password: string
+	phone: string
 }
 
 const UserSchema = new Schema<User>({
-	name: { type: String },
+	fullname: { type: String },
 	username: { type: String, required: true },
 	email: {
 		type: String,
@@ -16,6 +17,9 @@ const UserSchema = new Schema<User>({
 	password: {
 		type: String,
 		required: true,
+	},
+	phone: {
+		type: String,
 	},
 })
 

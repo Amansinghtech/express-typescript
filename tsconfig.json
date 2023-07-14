@@ -9,6 +9,7 @@
     "allowJs": true,
     "moduleResolution": "node",
     "removeComments": true,
+    "noUnusedLocals": false
   },
   "exclude": ["./graphql.config.ts"]
 }

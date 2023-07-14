@@ -1,11 +1,11 @@
 import express from 'express'
 import UsersRoute from './routers/users'
 import mongoose from 'mongoose'
+import { env } from './environment'
 
 const app = express()
 const port = 3000
 app.use(express.json())
-const mongoURI = process.env.MONGO_URI
 
 // console.log(mongoURI)
 
@@ -20,7 +20,7 @@ app.route('/').get((req, res) => {
 function main() {
 	// connect to mongodb
 	mongoose
-		.connect(mongoURI)
+		.connect(env.mongoURI)
 		.then(() => {
 			console.log('connected to mongodb')
 			app.listen(port, () => {
