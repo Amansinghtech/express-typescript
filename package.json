@@ -45,6 +45,6 @@
 		"express": "^4.18.2",
 		"jsonwebtoken": "^9.0.1",
 		"lodash": "^4.17.21",
-		"mongoose": "^7.3.2"
+		"mongoose": "^7.3.3"
 	}
 }
