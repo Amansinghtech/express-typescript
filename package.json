@@ -25,6 +25,7 @@
 	},
 	"homepage": "https://github.com/nekione/PLV-API-Server#readme",
 	"devDependencies": {
+		"@types/cors": "^2.8.13",
 		"@types/express": "^4.17.17",
 		"@types/jsonwebtoken": "^9.0.2",
 		"@types/lodash": "^4.14.182",
@@ -41,6 +42,7 @@
 	"dependencies": {
 		"@types/argon2": "^0.15.0",
 		"argon2": "^0.30.3",
+		"cors": "^2.8.5",
 		"dotenv": "^16.0.1",
 		"express": "^4.18.2",
 		"jsonwebtoken": "^9.0.1",

@@ -4,9 +4,16 @@ import ProtectedRoute from './routers/protected'
 import mongoose from 'mongoose'
 import tokenRequired from '../middlewares/tokenRequired'
 import { env } from './environment'
+import cors from 'cors'
 
 const app = express()
 const port = 4000
+
+app.use(
+	cors({
+		origin: 'http://localhost:3000',
+	})
+)
 app.use(express.json())
 
 // use the users route
