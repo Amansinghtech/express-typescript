@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose'
 
 export interface User extends Document {
 	fullname: string
-	username: string
 	email: string
 	password: string
 	phone: string
@@ -10,9 +9,9 @@ export interface User extends Document {
 
 const UserSchema = new Schema<User>({
 	fullname: { type: String },
-	username: { type: String, required: true },
 	email: {
 		type: String,
+		unique: true,
 	},
 	password: {
 		type: String,

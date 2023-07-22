@@ -8,39 +8,38 @@ import {
 } from '../controller/auth'
 
 interface LoginInput {
-	username?: string
+	email?: string
 	password?: string
 }
 
 interface UserInput extends LoginInput {
-	fullname?: string
-	password?: string
 	email?: string
+	password?: string
+	fullname?: string
 	phone?: string
 }
 
 const router = Router()
 router.post('/', async (req, res) => {
 	try {
-		const { fullname, password, email, username } = req.body as User
+		const { fullname, password, email } = req.body as User
 
-		if (!password || !username) {
+		if (!password || !email) {
 			return res
 				.status(400)
 				.json({ message: 'password and username are required' })
 		}
 
-		const user = await UserSchema.findOne({ username })
+		const user = await UserSchema.findOne({ email })
 
 		if (user) {
 			return res.status(400).json({ message: 'username already exists' })
 		}
 
 		const newUser = await UserSchema.create({
-			name,
+			fullname,
 			password,
 			email,
-			username,
 		})
 
 		return res.json(newUser.toObject())
@@ -58,15 +57,15 @@ router.post('/signup', async (req, res) => {
 		const formData = req.body as UserInput
 		//1. username and password are required fields
 
-		if (!formData.username)
-			return res.status(400).json({ message: 'username is required' })
+		if (!formData.email)
+			return res.status(400).json({ message: 'email is required' })
 
 		if (!formData.password)
 			return res.status(400).json({ message: 'password is required' })
 
 		// 1.1 username should be unique
 		const existingUser = await UserSchema.findOne({
-			username: formData.username,
+			email: formData.email,
 		}) // find [] fineOne {}
 
 		if (existingUser)
@@ -83,10 +82,9 @@ router.post('/signup', async (req, res) => {
 
 		//4. save the user in the database
 		const newUser = await UserSchema.create({
-			username: formData.username,
+			email: formData.email,
 			password: hashedPassword,
 			fullname: formData.fullname,
-			email: formData.email,
 			phone: formData.phone,
 		})
 		//5. return the user & accesstoken
@@ -94,13 +92,12 @@ router.post('/signup', async (req, res) => {
 		return res.json({
 			message: 'user created successfully',
 			payload: {
-				username: newUser.username,
 				fullname: newUser.fullname,
 				email: newUser.email,
 				phone: newUser.phone,
 			},
 			accessToken: createAccessToken({
-				username: newUser.username,
+				email: newUser.email,
 			}),
 		})
 	} catch (error) {
@@ -112,15 +109,15 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
 	try {
 		// 1. username and password are required fields
-		const { username, password } = req.body as LoginInput
-		if (!username)
-			return res.status(400).json({ message: 'username is required' })
+		const { email, password } = req.body as LoginInput
+		if (!email)
+			return res.status(400).json({ message: 'email is required' })
 
 		if (!password)
 			return res.status(400).json({ message: 'password is required' })
 
-		// 2. username should exist in the database
-		const user = await UserSchema.findOne({ username })
+		// 2. email should exist in the database
+		const user = await UserSchema.findOne({ email })
 
 		// 2.1 if not user then return error 404
 		if (!user) return res.status(404).json({ message: 'user not found' })
@@ -137,12 +134,11 @@ router.post('/login', async (req, res) => {
 		return res.json({
 			message: 'user logged in successfully',
 			payload: {
-				username: user.username,
-				fullname: user.fullname,
 				email: user.email,
+				fullname: user.fullname,
 				phone: user.phone,
 				accessToken: createAccessToken({
-					username: user.username,
+					email: user.email,
 				}),
 			},
 		})

@@ -10,11 +10,11 @@ const tokenRequired: RequestHandler = async (req, res, next) => {
 				.status(401)
 				.json({ message: 'authorization header is required' })
 
-		const result = checkAccessToken<{ username: string }>(authorization)
+		const result = checkAccessToken<{ email: string }>(authorization)
 
 		// check if the user is in the database
 		const user = await UserSchema.findOne({
-			username: result.decoded.username,
+			email: result.decoded.email,
 		})
 
 		if (!user) return res.status(404).json({ message: 'User not found' })
