@@ -6,7 +6,7 @@ import tokenRequired from '../middlewares/tokenRequired'
 import { env } from './environment'
 
 const app = express()
-const port = 3000
+const port = 4000
 app.use(express.json())
 
 // use the users route
