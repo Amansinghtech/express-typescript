@@ -69,7 +69,7 @@ router.post('/signup', async (req, res) => {
 		}) // find [] fineOne {}
 
 		if (existingUser)
-			return res.status(400).json({ message: 'username already exists' })
+			return res.status(400).json({ message: 'email already exists' })
 
 		//2. password has to be atleast 8 characters long
 		if (formData.password.length < 8) {
