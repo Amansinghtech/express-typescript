@@ -20,37 +20,6 @@ interface UserInput extends LoginInput {
 }
 
 const router = Router()
-router.post('/', async (req, res) => {
-	try {
-		const { fullname, password, email } = req.body as User
-
-		if (!password || !email) {
-			return res
-				.status(400)
-				.json({ message: 'password and username are required' })
-		}
-
-		const user = await UserSchema.findOne({ email })
-
-		if (user) {
-			return res.status(400).json({ message: 'username already exists' })
-		}
-
-		const newUser = await UserSchema.create({
-			fullname,
-			password,
-			email,
-		})
-
-		return res.json(newUser.toObject())
-	} catch (error) {
-		console.log(error)
-		return res.status(500).json({ message: 'something went wrong' })
-	}
-
-	// console.log(users)
-	// return res.json({ message: 'hello from users route, but ye wala alag h' })
-})
 
 router.post('/signup', async (req, res) => {
 	try {
@@ -144,26 +113,6 @@ router.post('/login', async (req, res) => {
 		})
 	} catch (error) {
 		console.log(error)
-		return res.status(500).json({ message: 'Internal Server Error' })
-	}
-})
-
-router.get('/verifyToken', async (req, res) => {
-	try {
-		const authorization = req.headers.authorization
-		if (!authorization)
-			return res
-				.status(401)
-				.json({ message: 'authorization header is required' })
-
-		const result = checkAccessToken(authorization)
-
-		if (!result.success)
-			return res.status(401).json({ message: result.message })
-
-		console.log(result)
-		return res.json({ message: 'hello from verifyToken route' })
-	} catch (error) {
 		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 })
