@@ -15,6 +15,8 @@ export interface User extends Document {
 	phone: string
 	dialCode: string
 	age: number
+	image: string
+	verified: boolean
 	gender: Gender
 }
 
@@ -35,6 +37,13 @@ const UserSchema = new Schema<User>({
 	},
 	dialCode: {
 		type: String,
+	},
+	image: {
+		type: String,
+	},
+	verified: {
+		type: Boolean,
+		default: false,
 	},
 	age: {
 		type: Number,
