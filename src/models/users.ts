@@ -7,16 +7,16 @@ enum Gender {
 }
 
 export interface User extends Document {
-	uid: string
-	email: string
+	uid: string // no update
+	email: string // no update
 	fullname: string
 	bio: string
 	password: string
 	phone: string
 	dialCode: string
 	age: number
-	image: string
-	verified: boolean
+	image: string // no update
+	verified: boolean // no update
 	gender: Gender
 }
 
