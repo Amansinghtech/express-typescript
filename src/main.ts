@@ -1,5 +1,5 @@
 import express from 'express'
-import UsersRoute from './routers/users'
+import UsersRoute from './routers/onboadring'
 import ProtectedRoute from './routers/protected'
 import mongoose from 'mongoose'
 import tokenRequired from '../middlewares/tokenRequired'
@@ -17,7 +17,7 @@ app.use(
 app.use(express.json())
 
 // use the users route
-app.use('/users', UsersRoute)
+app.use('/onboarding', UsersRoute)
 
 // hello world route for root
 app.route('/').get((req, res) => {
