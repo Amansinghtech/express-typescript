@@ -6,9 +6,10 @@ export interface savedPosts extends Document{
    createdAt:Date
 }
 const savedPostsSchema = new Schema<savedPosts>({ 
-    post:{ type:Schema.Types.ObjectId, ref: 'user'},
-    user:{ type:Schema.Types.ObjectId, ref: 'user'},
-    createdAt:{type:Date, default:Date.now}
+    post:{ type:Schema.Types.ObjectId, ref: 'posts'},
+    user:{ type:Schema.Types.ObjectId, ref: 'users'},
+    createdAt:{type:Date, default:Date.now,required:true}
 })
 savedPostsSchema.index({user:1})
+savedPostsSchema.index({post:1})
 export default mongoose.model('savedPosts', savedPostsSchema)
