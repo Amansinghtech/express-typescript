@@ -1,8 +1,18 @@
-import { RequestHandler } from 'express'
+import { RequestHandler, Response } from 'express'
 import { checkAccessToken } from '../src/controller/auth'
-import UserSchema from '../src/models/users'
+import UserSchema, { User } from '../src/models/users'
 
-const tokenRequired: RequestHandler = async (req, res, next) => {
+export type TokenRequiredRes = Response<
+	any,
+	{
+		user?: User
+	}
+>
+const tokenRequired: RequestHandler = async (
+	req,
+	res: TokenRequiredRes,
+	next
+) => {
 	try {
 		const authorization = req.headers.authorization
 		if (!authorization)
