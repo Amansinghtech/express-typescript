@@ -1,55 +1,64 @@
-import { Request, Response, NextFunction, Router } from "express";
-import tokenRequired from "../../middlewares/tokenRequired";
-import UserSchema, { User } from "../models/users";
-import { z, AnyZodObject } from "zod";
+import { RequestHandler, Router } from 'express'
+import { z } from 'zod'
+import UsersModal from '../models/users'
+import tokenRequired, {
+	TokenRequiredRes,
+} from '../../middlewares/tokenRequired'
+import { Gender } from '../models/users'
 
-const router = Router();
-router.use(tokenRequired);
+const router = Router()
+router.use(tokenRequired)
 
-router.get("/getUserInfo", (req, res) => {
-  console.log("this is from getUserInfo", res.locals.user);
+router.get('/getUserInfo', (req, res) => {
+	console.log('this is from getUserInfo', res.locals.user)
 
-  return res.json({
-    message: "Fetched User Successfully",
-    payload: {
-      email: res.locals.user.email,
-      fullname: res.locals.user.fullname,
-      phone: res.locals.user.phone,
-      uid: res.locals.user.uid,
-      verified: res.locals.user.verified,
-      image: res.locals.user.image,
-    },
-  });
-});
+	return res.json({
+		message: 'Fetched User Successfully',
+		payload: {
+			email: res.locals.user.email,
+			fullname: res.locals.user.fullname,
+			phone: res.locals.user.phone,
+			uid: res.locals.user.uid,
+			verified: res.locals.user.verified,
+			image: res.locals.user.image,
+		},
+	})
+})
 
-const updateschema = z.object({
-  body: z.object({
-    email: z.string().email(),
-    fullname: z
-      .string()
-      .min(2, { message: "Username must be at least 2 character long" })
-      .max(50, { message: "Username must be at most 50 characters long" }),
-    password: z
-      .string()
-      .min(8, {
-        message: "Password must be at least 8 characters long",
-      })
-      .max(50, { message: "Password must be at most 50 characters" }),
-    bio: z
-      .string()
-      .min(0)
-      .max(50, { message: "bio must be atmost 50 characters" }),
-    phone: z
-      .string()
-      .min(0)
-      .max(10, { message: "please enter valid phone number" }),
-    dialCode: z
-      .string()
-      .min(0)
-      .max(4, { message: "dialCode must be atmost 4 characters" }),
-    age: z.number().int().positive({ message: "invalid age" }),
-  }),
-});
+const UpdateUserSchema = z.object({
+	fullname: z
+		.string()
+		.min(2, { message: 'Username must be at least 2 character long' })
+		.max(50, {
+			message: 'Username must be at most 50 characters long',
+		})
+		.optional(),
+	password: z
+		.string()
+		.min(8, {
+			message: 'Password must be at least 8 characters long',
+		})
+		.max(50, { message: 'Password must be at most 50 characters' })
+		.optional(),
+	bio: z
+		.string()
+		.min(0)
+		.max(50, { message: 'bio must be atmost 50 characters' })
+		.optional(),
+	phone: z
+		.string()
+		.min(10, { message: 'phone number cannot have less than 10 chars' })
+		.max(14, { message: 'please enter valid phone number' })
+		.optional(),
+	dialCode: z
+		.string()
+		.min(0)
+		.max(4, { message: 'dialCode must be atmost 4 characters' })
+		.optional(),
+	age: z.number().int().positive({ message: 'invalid age' }).optional(),
+
+	gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+})
 
 // type updatedata = z.infer<typeof schema>;
 // const updateschema = z.object({
@@ -63,93 +72,59 @@ const updateschema = z.object({
 //   }),
 // });
 
-const validate =
-  (schema: AnyZodObject) =>
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await schema.parseAsync({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
-      return next();
-    } catch (error) {
-      return res.status(400).json(error);
-    }
-  };
+const validate: RequestHandler = (req, res, next) => {
+	try {
+		UpdateUserSchema.parse(req.body)
+		return next()
+	} catch (error) {
+		return res.status(400).json(error)
+	}
+}
 
-// router.put("/updateUser", validate(updateschema), async (req, res, next) => {
-//   try {
-//     const updateData = req.body as User;
+router.put('/updateUser', validate, async (req, res: TokenRequiredRes) => {
+	try {
+		const updateData = req.body as z.infer<typeof UpdateUserSchema>
 
-//     const user = await UserSchema.findOneAndUpdate(
-//       {
-//         id: res.locals.user.id,
-//       },
-//       {
-//         new: true,
-//       },
-//       {
-//         $set: {
-//           fullname: updateData?.fullname,
-//           bio: updateData?.bio,
-//           password: updateData?.password,
-//           phone: updateData?.phone,
-//           dialCode: updateData?.dialCode,
-//           age: updateData?.age,
-//         },
-//       }
-//     );
+		res.locals.user.fullname = updateData.fullname
+		// res.locals.user.password = updateData.password
+		const toUpdate = {
+			fullname: updateData.fullname,
+			bio: updateData.bio,
+			phone: updateData.phone,
+			dialCode: updateData.dialCode,
+			age: updateData.age,
+			gender: updateData.gender as Gender,
+		}
 
-//     if (user) {
-//       console.log("Data base updated");
-//       res.send(user);
-//     }
-//     // return res.status(404).send();
-//   } catch (error) {
-//     return res
-//       .status(500)
-//       .json({ message: error.message || "internal server error" });
-//   }
-// });
+		const newUser = await UsersModal.findOneAndUpdate(
+			{ uid: res.locals.user.uid },
+			{
+				$set: toUpdate,
+			},
+			{
+				new: true,
+			}
+		)
 
-router.put(
-  "/updateUser",
-  validate(updateschema),
-  (req: Request, res: Response): Response => {
-    try {
-      const updateData = req.body as User;
+		return res.json({
+			message: 'Data base updated',
+			payload: {
+				uid: newUser.uid,
+				email: newUser.email,
+				fullname: newUser.fullname,
+				phone: newUser.phone,
+				verified: newUser.verified,
+				bio: newUser.bio,
+				age: newUser.age,
+				gender: newUser.gender,
+			},
+		})
+		// res.send(user);
+	} catch (error) {
+		return res
+			.status(500)
+			.json({ message: error.message || 'internal server error' })
+	}
+})
 
-      const user = UserSchema.findOneAndUpdate(
-        {
-          id: res.locals.user.id,
-        },
-        {
-          new: true,
-        },
-        {
-          $set: {
-            fullname: updateData?.fullname,
-            bio: updateData?.bio,
-            password: updateData?.password,
-            phone: updateData?.phone,
-            dialCode: updateData?.dialCode,
-            age: updateData?.age,
-          },
-        }
-      );
-      if (!user) {
-        return res.status(404).json({ message: "user not found" });
-      } else {
-        return res.json({ message: "Data base updated" });
-      }
-      // res.send(user);
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: error.message || "internal server error" });
-    }
-  }
-);
-
-export default router;
+export default router
