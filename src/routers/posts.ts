@@ -6,6 +6,7 @@ import PostsModal, { posts } from '../models/posts'
 import { z } from 'zod'
 import postSchema from '../models/posts'
 
+
 // input pust body schema
 const createPostSchema = z.object({
 	caption: z
@@ -91,7 +92,7 @@ router.post(
 // Update Post
 router.put('/updatePost/:id',async(req, res) => {
 	try {
-		const user_id=await PostsModal.findByIdAndUpdate(req.params.id,req.body)
+		const user_id=await PostsModal.findOneAndUpdate({id:req.params.id},req.body)
 		if(!user_id) return res.status(404).json({  message: 'User not found' })
 		console.log('updated post successfully')
 		res.send(user_id)
@@ -102,9 +103,7 @@ router.put('/updatePost/:id',async(req, res) => {
 // Get Post
 router.get('/getPost', async(req, res) => {
 	try {
-		const post = await PostsModal.find({
-        
-		})
+		const post = await PostsModal.find({})
 		return res.json(post)
 	} catch (error) {
 		return res.status(500).json({message: 'Internal Server Error'})
@@ -113,7 +112,7 @@ router.get('/getPost', async(req, res) => {
 // Delete Post2
 router.delete('/deletePost/:id', async(req, res) => {
 	try {
-		const user_id= await PostsModal.findByIdAndDelete(req.params.id)
+		const user_id= await PostsModal.findOneAndDelete({id:req.params.id})
 		// console.log(user_id)
 		if(!user_id) return res.status(404).json({message :'user id not found'})
 		console.log('post deleted successfully')
