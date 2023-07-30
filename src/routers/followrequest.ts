@@ -38,7 +38,7 @@ router.post("/follow/:uid", async (req, res: TokenRequiredRes) => {
     });
 
     if (existingFollow) {
-      return res.status(400).json({ error: "Already following this user" });
+      return res.status(400).json({ message: "Already following this user" });
     }
 
     const followRequest = new FollowRequestSchema({
@@ -69,7 +69,7 @@ router.post("/unFollow/:uid", async (req, res: TokenRequiredRes) => {
 
     if (!UserToFollow) {
       return res.status(404).json({
-        message: "User not found",
+        message: "User to follow not found",
       });
     }
 

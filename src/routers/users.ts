@@ -75,7 +75,13 @@ const validate: RequestHandler = (req, res, next) => {
 router.put("/updateUser", validate, async (req, res: TokenRequiredRes) => {
   try {
     const updateData = req.body as z.infer<typeof UpdateUserSchema>;
-    const hashedPassword = await createHash(updateData.password);
+    // const hashedPassword = await createHash(updateData.password);
+
+    let hashedPassword;
+    if (updateData.password) {
+      hashedPassword = await createHash(updateData.password);
+    }
+
     // res.locals.user.fullname = updateData.fullname;
     // res.locals.user.password = updateData.password
 
