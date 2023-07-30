@@ -90,7 +90,7 @@ router.post(
 )
 
 // Update Post
-router.put('/updatePost/:id',async(req, res) => {
+router.put('/updatePost/:id',validateCreatePostInput,async(req, res) => {
 	try {
 		const user_id=await PostsModal.findOneAndUpdate({id:req.params.id},req.body)
 		if(!user_id) return res.status(404).json({  message: 'User not found' })
