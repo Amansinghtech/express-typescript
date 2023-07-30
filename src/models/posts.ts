@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, ObjectId } from 'mongoose'
 import { v4 } from 'uuid'
 
+
 export interface posts extends Document {
 	id: string
 	user: ObjectId

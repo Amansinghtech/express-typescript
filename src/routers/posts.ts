@@ -4,6 +4,7 @@ import tokenRequired, {
 } from '../../middlewares/tokenRequired'
 import PostsModal, { posts } from '../models/posts'
 import { z } from 'zod'
+import postSchema from '../models/posts'
 
 // input pust body schema
 const createPostSchema = z.object({
@@ -88,7 +89,38 @@ router.post(
 )
 
 // Update Post
+router.put('/updatePost/:id',async(req, res) => {
+	try {
+		const user_id=await PostsModal.findByIdAndUpdate(req.params.id,req.body)
+		if(!user_id) return res.status(404).json({  message: 'User not found' })
+		console.log('updated post successfully')
+		res.send(user_id)
+	} catch (error) {
+		return res.status(500).json({message: 'Internal Server error', error: error})
+	}
+})
 // Get Post
-// Delete Post
-
+router.get('/getPost', async(req, res) => {
+	try {
+		const post = await PostsModal.find({
+        
+		})
+		return res.json(post)
+	} catch (error) {
+		return res.status(500).json({message: 'Internal Server Error'})
+	}
+})
+// Delete Post2
+router.delete('/deletePost/:id', async(req, res) => {
+	try {
+		const user_id= await PostsModal.findByIdAndDelete(req.params.id)
+		// console.log(user_id)
+		if(!user_id) return res.status(404).json({message :'user id not found'})
+		console.log('post deleted successfully')
+		return res.send(user_id)
+	} catch(error) {
+		console.log(error)
+		return res.status(500).json({message: 'Internal Server Error'})
+	}
+})
 export default router
