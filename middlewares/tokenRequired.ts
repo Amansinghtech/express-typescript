@@ -26,7 +26,8 @@ const tokenRequired: RequestHandler = async (
 		const user = await UserSchema.findOne({
 			email: result.decoded.email,
 		})
-
+        //  console.log(user)
+		//  console.log(result)
 		if (!user) return res.status(404).json({ message: 'User not found' })
 
 		if (!result.success)

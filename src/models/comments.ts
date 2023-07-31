@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, ObjectId } from 'mongoose'
+import { v4 } from 'uuid'
 export interface comments extends Document{
     commentedBy:ObjectId
     post:ObjectId
@@ -9,7 +10,7 @@ export interface comments extends Document{
     tags:string[]
 }
 const commentsSchema = new Schema<comments>({ 
-    commentedBy: { type:Schema.Types.ObjectId, ref: 'users',required: true} ,
+    commentedBy: { type:Schema.Types.ObjectId, ref: 'users',required: true,default:v4} ,
     post: { type:Schema.Types.ObjectId, ref: 'posts',required:true},
     createdOn:{ type:Date,default:Date.now,required:true},
     editedOn:{ type:Date},

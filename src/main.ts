@@ -4,6 +4,8 @@ import UsersRoute from './routers/users'
 import ProtectedRoute from './routers/protected'
 import mongoose from 'mongoose'
 import tokenRequired from '../middlewares/tokenRequired'
+import PostsRoute from './routers/posts'
+
 import { env } from './environment'
 import cors from 'cors'
 
@@ -20,6 +22,7 @@ app.use(express.json())
 // use the users route
 app.use('/onboarding', OnboardingRoute)
 app.use('/users', UsersRoute)
+app.use('/posts', PostsRoute)
 
 // hello world route for root
 app.route('/').get((req, res) => {
@@ -31,7 +34,8 @@ app.use('/protected', tokenRequired, ProtectedRoute)
 function main() {
 	// connect to mongodb
 	mongoose
-		.connect(env.mongoURI)
+	// useUnifiedTopology: true
+	.connect(env.mongoURI,)
 		.then(() => {
 			console.log('connected to mongodb')
 			app.listen(port, () => {
