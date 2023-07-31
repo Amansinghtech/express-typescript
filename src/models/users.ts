@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose'
 import { v4 } from 'uuid'
-enum Gender {
+export enum Gender {
 	male = 'MALE',
 	female = 'FEMALE',
 	other = 'OTHER',
