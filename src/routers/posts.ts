@@ -62,8 +62,8 @@ const validateUpdatePostInput: RequestHandler = (req, res, next) => {
 	}
 }
 
-interface PopuplatedPosts extends Omit<posts, 'originalPosts' | 'user'> {
-	originalPosts: posts
+interface PopuplatedPosts extends Omit<posts, 'originalPost' | 'user'> {
+	originalPost: posts
 	user: User
 }
 
@@ -93,7 +93,7 @@ router.post(
 				caption,
 				tags,
 				user: res.locals.user._id,
-				originalPosts: originalPost ? originalPost._id : undefined,
+				originalPost: originalPost ? originalPost._id : undefined,
 			})
 
 			return res.status(200).json({
@@ -105,7 +105,7 @@ router.post(
 					createdOn: newPost.createdOn,
 					lastEdited: newPost.lastEdited,
 					user: res.locals.user.uid,
-					originalPosts: originalPost ? originalPost.id : undefined,
+					originalPost: originalPost ? originalPost.id : undefined,
 				},
 			})
 		} catch (error) {
@@ -134,14 +134,10 @@ router.put('/updatePost/:id', validateCreatePostInput, async (req, res) => {
 			{
 				new: true,
 			}
-		).populate('originalPosts')) as PopuplatedPosts
-
-		console.log(post)
+		).populate(['originalPost', 'user'])) as PopuplatedPosts
 
 		if (!post) return res.status(404).json({ message: 'Post not found' })
 		console.log('updated post successfully')
-
-		const postUser = await UsersModal.findOne({ _id: post.user })
 
 		return res.status(200).json({
 			message: 'Post created',
@@ -151,8 +147,8 @@ router.put('/updatePost/:id', validateCreatePostInput, async (req, res) => {
 				tags: post.tags,
 				createdOn: post.createdOn,
 				lastEdited: post.lastEdited,
-				user: postUser?.uid,
-				originalPosts: post.originalPosts?.id,
+				user: post.user?.uid,
+				originalPost: post.originalPost?.id,
 			},
 		})
 	} catch (error) {
@@ -166,9 +162,10 @@ router.get('/getPost/:id', async (req, res) => {
 	try {
 		const post: PopuplatedPosts = await PostsModal.findOne({
 			id: req.params.id,
-		}).populate('originalPosts')
+		}).populate(['originalPost', 'user'])
 
-		const postUser = await UsersModal.findOne({ _id: post.user })
+		console.log(post)
+
 		return res.status(200).json({
 			message: 'Post created',
 			payload: {
@@ -177,8 +174,8 @@ router.get('/getPost/:id', async (req, res) => {
 				tags: post.tags,
 				createdOn: post.createdOn,
 				lastEdited: post.lastEdited,
-				user: postUser?.uid,
-				originalPosts: post.originalPosts?.id,
+				user: post.user?.uid,
+				originalPost: post.originalPost?.id,
 			},
 		})
 	} catch (error) {
@@ -191,7 +188,7 @@ router.delete('/deletePost/:id', async (req, res) => {
 	try {
 		const post = await PostsModal.findOneAndDelete({ id: req.params.id })
 		// console.log(post)
-		if (!post) return res.status(404).json({ message: 'user id not found' })
+		if (!post) return res.status(404).json({ message: 'post not found' })
 
 		return res.send({
 			message: 'Post deleted successfully',

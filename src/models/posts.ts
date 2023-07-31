@@ -8,7 +8,7 @@ export interface posts extends Document {
 	tags: string[]
 	createdOn: Date
 	lastEdited: Date
-	originalPosts: ObjectId
+	originalPost: ObjectId
 }
 const postsSchema = new Schema({
 	id: { type: String, unique: true, required: true, default: v4 },
@@ -17,7 +17,7 @@ const postsSchema = new Schema({
 	tags: { type: [String], default: null },
 	createdOn: { type: Date, default: Date.now, required: true },
 	lastEdited: { type: Date, default: null },
-	originalPosts: { type: Schema.Types.ObjectId, ref: 'posts' },
+	originalPost: { type: Schema.Types.ObjectId, ref: 'posts' },
 })
 postsSchema.index({ user: 1 })
 postsSchema.index({ createdOn: 1 })
