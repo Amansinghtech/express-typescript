@@ -4,8 +4,7 @@ import tokenRequired, {
 } from '../../middlewares/tokenRequired'
 import PostsModal, { posts } from '../models/posts'
 import { z } from 'zod'
-import postSchema from '../models/posts'
-
+import UsersModal, { User } from '../models/users'
 
 // input pust body schema
 const createPostSchema = z.object({
@@ -19,6 +18,19 @@ const createPostSchema = z.object({
 		}),
 	tags: z.array(z.string().max(50)).max(10).optional(),
 	originalPostId: z.string().max(40).optional(),
+})
+
+const updatePostSchema = z.object({
+	caption: z
+		.string()
+		.min(3, {
+			message: 'caption must be at least 3 characters long',
+		})
+		.max(500, {
+			message: 'caption must be at most 500 characters long',
+		})
+		.optional(),
+	tags: z.array(z.string().max(50)).max(10).optional(),
 })
 
 type CreatePostInput = z.infer<typeof createPostSchema>
@@ -36,6 +48,23 @@ const validateCreatePostInput: RequestHandler = (req, res, next) => {
 		//     message: error.errors[0].message
 		// })
 	}
+}
+
+const validateUpdatePostInput: RequestHandler = (req, res, next) => {
+	try {
+		updatePostSchema.parse(req.body)
+		next()
+	} catch (error) {
+		return res.status(400).json(error)
+		// return res.status(400).json({
+		//     message: error.errors[0].message
+		// })
+	}
+}
+
+interface PopuplatedPosts extends Omit<posts, 'originalPosts' | 'user'> {
+	originalPosts: posts
+	user: User
 }
 
 // Create Post
@@ -90,36 +119,86 @@ router.post(
 )
 
 // Update Post
-router.put('/updatePost/:id',validateCreatePostInput,async(req, res) => {
+router.put('/updatePost/:id', validateCreatePostInput, async (req, res) => {
 	try {
-		const user_id=await PostsModal.findOneAndUpdate({id:req.params.id},req.body)
-		if(!user_id) return res.status(404).json({  message: 'User not found' })
+		const { caption, tags } = req.body as CreatePostInput
+
+		const post = (await PostsModal.findOneAndUpdate(
+			{ id: req.params.id },
+			{
+				$set: {
+					caption: caption,
+					tags: tags,
+				},
+			},
+			{
+				new: true,
+			}
+		).populate('originalPosts')) as PopuplatedPosts
+
+		console.log(post)
+
+		if (!post) return res.status(404).json({ message: 'Post not found' })
 		console.log('updated post successfully')
-		res.send(user_id)
+
+		const postUser = await UsersModal.findOne({ _id: post.user })
+
+		return res.status(200).json({
+			message: 'Post created',
+			payload: {
+				id: post.id,
+				caption: post.caption,
+				tags: post.tags,
+				createdOn: post.createdOn,
+				lastEdited: post.lastEdited,
+				user: postUser?.uid,
+				originalPosts: post.originalPosts?.id,
+			},
+		})
 	} catch (error) {
-		return res.status(500).json({message: 'Internal Server error', error: error})
+		console.log(error)
+		return res.status(500).json({ message: 'Internal Server error' })
 	}
 })
+
 // Get Post
-router.get('/getPost', async(req, res) => {
+router.get('/getPost/:id', async (req, res) => {
 	try {
-		const post = await PostsModal.find({})
-		return res.json(post)
+		const post: PopuplatedPosts = await PostsModal.findOne({
+			id: req.params.id,
+		}).populate('originalPosts')
+
+		const postUser = await UsersModal.findOne({ _id: post.user })
+		return res.status(200).json({
+			message: 'Post created',
+			payload: {
+				id: post.id,
+				caption: post.caption,
+				tags: post.tags,
+				createdOn: post.createdOn,
+				lastEdited: post.lastEdited,
+				user: postUser?.uid,
+				originalPosts: post.originalPosts?.id,
+			},
+		})
 	} catch (error) {
-		return res.status(500).json({message: 'Internal Server Error'})
+		console.log(error)
+		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 })
 // Delete Post2
-router.delete('/deletePost/:id', async(req, res) => {
+router.delete('/deletePost/:id', async (req, res) => {
 	try {
-		const user_id= await PostsModal.findOneAndDelete({id:req.params.id})
-		// console.log(user_id)
-		if(!user_id) return res.status(404).json({message :'user id not found'})
-		console.log('post deleted successfully')
-		return res.send(user_id)
-	} catch(error) {
+		const post = await PostsModal.findOneAndDelete({ id: req.params.id })
+		// console.log(post)
+		if (!post) return res.status(404).json({ message: 'user id not found' })
+
+		return res.send({
+			message: 'Post deleted successfully',
+		})
+	} catch (error) {
 		console.log(error)
-		return res.status(500).json({message: 'Internal Server Error'})
+		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 })
 export default router
