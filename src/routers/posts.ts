@@ -5,6 +5,8 @@ import tokenRequired, {
 import PostsModal, { posts } from '../models/posts'
 import { z } from 'zod'
 import UsersModal, { User } from '../models/users'
+import { Query } from 'mongoose';
+
 
 // input pust body schema
 const createPostSchema = z.object({
@@ -34,6 +36,7 @@ const updatePostSchema = z.object({
 })
 
 type CreatePostInput = z.infer<typeof createPostSchema>
+type updatePostInput = z.infer<typeof updatePostSchema>
 
 const router = Router()
 router.use(tokenRequired)
@@ -119,7 +122,7 @@ router.post(
 )
 
 // Update Post
-router.put('/updatePost/:id', validateCreatePostInput, async (req, res) => {
+router.put('/updatePost/:id', validateUpdatePostInput, async (req, res) => {
 	try {
 		const { caption, tags } = req.body as CreatePostInput
 
@@ -167,7 +170,7 @@ router.get('/getPost/:id', async (req, res) => {
 		console.log(post)
 
 		return res.status(200).json({
-			message: 'Post created',
+			message: 'Post fetched successfully',
 			payload: {
 				id: post.id,
 				caption: post.caption,
@@ -198,4 +201,49 @@ router.delete('/deletePost/:id', async (req, res) => {
 		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 })
+// get ALL posts
+const getAllPostQuerySchema = z.object({
+	limit: z.number().min(0).default(10),
+	skip: z.number().min(0).default(0),
+	sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  });
+  
+
+router.get('/getAllPost', async (req, res) => {
+	try {
+	//   const limit = parseInt(req.query.limit?.toString() || '10');
+	//   const skip = parseInt(req.query.skip?.toString() || '0');
+  
+	//   const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
+	//   console.log(sortOrder)
+	//   const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+	const query = getAllPostQuerySchema.parse(req.query);
+    const { limit, skip, sortOrder } = query;
+
+	  const posts: PopuplatedPosts[] = await PostsModal.find({})
+		.populate(['originalPost', 'user'])
+		.sort({ createdOn: sortOrder }) 
+		.limit(limit)
+		.skip(skip)
+		.lean(); // the lean() method is used to convert to plain JavaScript objects
+  
+	  return res.status(200).json({
+		message: 'Posts fetched successfully',
+		payload: posts.map((post) => ({
+		  id: post.id,
+		  caption: post.caption,
+		  tags: post.tags,
+		  createdOn: post.createdOn,
+		  lastEdited: post.lastEdited,
+		  user: post.user?.uid,
+		  originalPost: post.originalPost?.id,
+		})),
+	  });
+	// return res.status(200).send(posts)
+	} catch (error) {
+	  console.log(error);
+	  return res.status(500).json({ message: 'Internal Server Error' });
+	}
+  });
+  
 export default router
