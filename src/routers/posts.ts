@@ -36,9 +36,9 @@ const updatePostSchema = z.object({
 })
 
 const getAllPostQuerySchema = z.object({
-  limit: z.number().min(0).max(100),
-  skip: z.number().min(0).default(0),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  limit: z.coerce.number().min(0).max(100).default(10).optional(),
+  skip: z.coerce.number().min(0).default(0).optional(),
+  sortOrder: z.enum(["asc", "desc"]).default("asc").optional(),
 })
 
 type CreatePostInput = z.infer<typeof createPostSchema>
@@ -54,9 +54,6 @@ const validateCreatePostInput: RequestHandler = (req, res, next) => {
     next()
   } catch (error) {
     return res.status(400).json(error)
-    // return res.status(400).json({
-    //     message: error.errors[0].message
-    // })
   }
 }
 
@@ -66,47 +63,15 @@ const validateUpdatePostInput: RequestHandler = (req, res, next) => {
     next()
   } catch (error) {
     return res.status(400).json(error)
-    // return res.status(400).json({
-    //     message: error.errors[0].message
-    // })
   }
 }
 
-// const validateGetAllPostInput: RequestHandler = (req, res, next) => {
-//   try {
-//     getAllPostQuerySchema.parse(req.query)
-//     next()
-//   } catch (error) {
-//     return res.status(400).json(error)
-//   }
-// }
-const validateGetAllPostInput = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const validateGetAllPostInput: RequestHandler = (req, res, next) => {
   try {
-    const { limit, skip, sortOrder } = req.query as GetAllPostInput
-
-    // Parse the limit and skip parameters to integers
-    const parsedLimit = parseInt(String(limit), 10) // Base 10 for decimal numbers
-    const parsedSkip = parseInt(String(skip), 10)
-
-    // Check if the parsed values are valid numbers
-    if (isNaN(parsedLimit) || isNaN(parsedSkip)) {
-      throw new Error("Invalid limit or skip value.")
-    }
-
-    // Assign the parsed values back to req.query
-    req.query = {
-      ...req.query,
-      limit: String(parsedLimit),
-      skip: String(parsedSkip),
-    }
-
+    getAllPostQuerySchema.parse(req.query)
     next()
   } catch (error) {
-    return res.status(400).json({ message: error.message })
+    return res.status(400).json(error)
   }
 }
 
@@ -248,14 +213,14 @@ router.delete("/deletePost/:id", async (req, res) => {
 })
 // get ALL posts
 
-router.get("/getAllPost", validateGetAllPostInput, async (req, res) => {
+router.get("/getAllPosts", validateGetAllPostInput, async (req, res) => {
   try {
     // const query = getAllPostQuerySchema.parse(req.query)
 
     const { limit, skip, sortOrder } = req.query as GetAllPostInput
 
     const posts: PopuplatedPosts[] = await PostsModal.find({
-      // user: res.locals.user.uid,
+      user: res.locals.user._id,
     })
       .populate(["originalPost", "user"])
       .sort({ createdOn: sortOrder })
@@ -263,19 +228,18 @@ router.get("/getAllPost", validateGetAllPostInput, async (req, res) => {
       .skip(skip)
       .lean() // the lean() method is used to convert to plain JavaScript objects
 
-    // return res.status(200).json({
-    //   message: "Posts fetched successfully",
-    //   payload: posts.map((post) => ({
-    //     id: post.id,
-    //     caption: post.caption,
-    //     tags: post.tags,
-    //     createdOn: post.createdOn,
-    //     lastEdited: post.lastEdited,
-    //     user: post.user?.uid,
-    //     originalPost: post.originalPost?.id,
-    //   })),
-    // })
-    return res.status(200).send(posts)
+    return res.status(200).json({
+      message: "Posts fetched successfully",
+      payload: posts.map((post) => ({
+        id: post.id,
+        caption: post.caption,
+        tags: post.tags,
+        createdOn: post.createdOn,
+        lastEdited: post.lastEdited,
+        user: post.user?.uid,
+        originalPost: post.originalPost?.id,
+      })),
+    })
   } catch (error) {
     console.log(error)
     return res.status(500).json({ message: "Internal Server Error" })
