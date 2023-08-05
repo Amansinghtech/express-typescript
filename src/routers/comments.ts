@@ -5,6 +5,7 @@ import tokenRequired, {
 import { z } from "zod"
 import CommentModal, { comments } from "../models/comments"
 import PostModal, { posts } from "../models/posts"
+import { User } from "../models/users"
 
 const router = Router()
 router.use(tokenRequired)
@@ -23,7 +24,7 @@ const validateaddComment: RequestHandler = (req, res, next) => {
 }
 interface PopuplatedComment extends Omit<comments, "post" | "commentedBy"> {
   post: posts
-  commentedBy: comments
+  commentedBy: User
 }
 
 router.post(
@@ -33,22 +34,22 @@ router.post(
     try {
       console.log("created comment successfully")
       const { comment, tags } = req.body as addCommentInput
-      const post = (await PostModal.findOne({
+      const post: PopuplatedComment = await PostModal.findOne({
         id: req.params.id,
-      })) as PopuplatedComment
+      })
 
       console.log(post)
 
       const newComment = await CommentModal.create({
         commentedBy: res.locals.user._id,
-        post: post.id,
+        post: post._id,
         comment,
         tags,
       })
       return res.status(200).json({
         message: "added comment successfully",
         payload: {
-          commentedBy: res.locals.user._id,
+          commentedBy: res.locals.user.uid,
           createdOn: newComment.createdOn,
           editedOn: newComment.editedOn,
           visibility: newComment.visibility,
@@ -62,5 +63,21 @@ router.post(
     }
   }
 )
+// delete comment
+router.delete("deleteComment/:id", async (req, res) => {
+  // console.log("harshall comment")
+  try {
+    // console.log("harsh")
+    const post = await CommentModal.findOneAndDelete({
+      id: req.params.id,
+    })
+    console.log(post)
+
+    if (!post) return res.status(404).json({ message: "Comment not found" })
+    return res.status(200).json({ message: "Comment deleted" })
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error" })
+  }
+})
 
 export default router
