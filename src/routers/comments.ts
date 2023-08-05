@@ -5,7 +5,6 @@ import tokenRequired, {
 import { z } from "zod"
 import CommentModal, { comments } from "../models/comments"
 import PostModal, { posts } from "../models/posts"
-import { User } from "../models/users"
 
 const router = Router()
 router.use(tokenRequired)
@@ -13,7 +12,9 @@ const addCommentSchema = z.object({
   comment: z.string().min(1).max(1000),
   tags: z.array(z.string().max(50)).max(10).optional(),
 })
+
 type addCommentInput = z.infer<typeof addCommentSchema>
+
 const validateaddComment: RequestHandler = (req, res, next) => {
   try {
     addCommentSchema.parse(req.body)
@@ -24,7 +25,7 @@ const validateaddComment: RequestHandler = (req, res, next) => {
 }
 interface PopuplatedComment extends Omit<comments, "post" | "commentedBy"> {
   post: posts
-  commentedBy: User
+  commentedBy: comments
 }
 
 router.post(
@@ -34,22 +35,22 @@ router.post(
     try {
       console.log("created comment successfully")
       const { comment, tags } = req.body as addCommentInput
-      const post: PopuplatedComment = await PostModal.findOne({
+      const post = (await PostModal.findOne({
         id: req.params.id,
-      })
+      })) as PopuplatedComment
 
       console.log(post)
 
       const newComment = await CommentModal.create({
         commentedBy: res.locals.user._id,
-        post: post._id,
+        post: post.id,
         comment,
         tags,
       })
       return res.status(200).json({
         message: "added comment successfully",
         payload: {
-          commentedBy: res.locals.user.uid,
+          commentedBy: res.locals.user._id,
           createdOn: newComment.createdOn,
           editedOn: newComment.editedOn,
           visibility: newComment.visibility,
