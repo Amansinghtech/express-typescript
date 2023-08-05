@@ -1,19 +1,19 @@
-import { RequestHandler, Router } from "express";
-import { z } from "zod";
-import UsersModal from "../models/users";
-import FollowUserRoute from "./followrequest";
+import { RequestHandler, Router } from "express"
+import { z } from "zod"
+import UsersModal from "../models/users"
+import FollowUserRoute from "./followrequest"
 import tokenRequired, {
   TokenRequiredRes,
-} from "../../middlewares/tokenRequired";
-import { Gender } from "../models/users";
-import { createHash } from "../controller/auth";
+} from "../../middlewares/tokenRequired"
+import { Gender } from "../models/users"
+import { createHash } from "../controller/auth"
 
-const router = Router();
-router.use(tokenRequired);
-router.use("/followRequest", FollowUserRoute);
+const router = Router()
+router.use(tokenRequired)
+router.use("/followRequest", FollowUserRoute)
 
 router.get("/getUserInfo", (req, res) => {
-  console.log("this is from getUserInfo", res.locals.user);
+  console.log("this is from getUserInfo", res.locals.user)
 
   return res.json({
     message: "Fetched User Successfully",
@@ -25,8 +25,8 @@ router.get("/getUserInfo", (req, res) => {
       verified: res.locals.user.verified,
       image: res.locals.user.image,
     },
-  });
-});
+  })
+})
 
 const UpdateUserSchema = z.object({
   fullname: z
@@ -61,25 +61,25 @@ const UpdateUserSchema = z.object({
   age: z.number().int().positive({ message: "invalid age" }).optional(),
 
   gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
-});
+})
 
 const validate: RequestHandler = (req, res, next) => {
   try {
-    UpdateUserSchema.parse(req.body);
-    return next();
+    UpdateUserSchema.parse(req.body)
+    return next()
   } catch (error) {
-    return res.status(400).json(error);
+    return res.status(400).json(error)
   }
-};
+}
 
 router.put("/updateUser", validate, async (req, res: TokenRequiredRes) => {
   try {
-    const updateData = req.body as z.infer<typeof UpdateUserSchema>;
+    const updateData = req.body as z.infer<typeof UpdateUserSchema>
     // const hashedPassword = await createHash(updateData.password);
 
-    let hashedPassword;
+    let hashedPassword
     if (updateData.password) {
-      hashedPassword = await createHash(updateData.password);
+      hashedPassword = await createHash(updateData.password)
     }
 
     // res.locals.user.fullname = updateData.fullname;
@@ -93,7 +93,7 @@ router.put("/updateUser", validate, async (req, res: TokenRequiredRes) => {
       dialCode: updateData.dialCode,
       age: updateData.age,
       gender: updateData.gender as Gender,
-    };
+    }
 
     const newUser = await UsersModal.findOneAndUpdate(
       { uid: res.locals.user.uid },
@@ -103,7 +103,7 @@ router.put("/updateUser", validate, async (req, res: TokenRequiredRes) => {
       {
         new: true,
       }
-    );
+    )
 
     return res.json({
       message: "Data base updated",
@@ -117,13 +117,13 @@ router.put("/updateUser", validate, async (req, res: TokenRequiredRes) => {
         age: newUser.age,
         gender: newUser.gender,
       },
-    });
+    })
     // res.send(user);
   } catch (error) {
     return res
       .status(500)
-      .json({ message: error.message || "internal server error" });
+      .json({ message: error.message || "internal server error" })
   }
-});
+})
 
-export default router;
+export default router

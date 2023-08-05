@@ -5,8 +5,7 @@ import tokenRequired, {
 import PostsModal, { posts } from "../models/posts"
 import { z } from "zod"
 import UsersModal, { User } from "../models/users"
-import { Query } from "mongoose"
-import { Request, Response, NextFunction } from "express"
+import CommentsRoute from "./comments"
 
 // input pust body schema
 const createPostSchema = z.object({
@@ -47,6 +46,7 @@ type GetAllPostInput = z.infer<typeof getAllPostQuerySchema>
 
 const router = Router()
 router.use(tokenRequired)
+router.use("/comments", CommentsRoute)
 
 const validateCreatePostInput: RequestHandler = (req, res, next) => {
   try {
@@ -110,7 +110,7 @@ router.post(
       })
 
       return res.status(200).json({
-        message: "Post created",
+        message: "Post created Successfully",
         payload: {
           id: newPost.id,
           caption: newPost.caption,
