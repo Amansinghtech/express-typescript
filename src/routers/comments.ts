@@ -5,6 +5,7 @@ import tokenRequired, {
 import { z } from "zod"
 import CommentModal, { comments } from "../models/comments"
 import PostModal, { posts } from "../models/posts"
+import { User } from "../models/users"
 
 const router = Router()
 router.use(tokenRequired)
@@ -25,7 +26,7 @@ const validateaddComment: RequestHandler = (req, res, next) => {
 }
 interface PopuplatedComment extends Omit<comments, "post" | "commentedBy"> {
   post: posts
-  commentedBy: comments
+  commentedBy: User
 }
 
 router.post(
@@ -43,7 +44,7 @@ router.post(
 
       const newComment = await CommentModal.create({
         commentedBy: res.locals.user._id,
-        post: post.id,
+        post: post._id,
         comment,
         tags,
       })
@@ -66,11 +67,11 @@ router.post(
 )
 // delete comment
 router.delete("deleteComment/:id", async (req, res) => {
-  // console.log("harshall comment")
+  console.log("harshall comment")
   try {
     // console.log("harsh")
     const post = await CommentModal.findOneAndDelete({
-      id: req.params.id,
+      _id: req.params.id,
     })
     console.log(post)
 
