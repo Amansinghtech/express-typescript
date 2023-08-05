@@ -34,7 +34,7 @@ router.post(
       console.log("created comment successfully")
       const { comment, tags } = req.body as addCommentInput
       const post = (await PostModal.findOne({
-        id: req.params._id,
+        id: req.params.id,
       })) as PopuplatedComment
 
       console.log(post)
