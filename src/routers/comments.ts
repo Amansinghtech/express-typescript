@@ -128,10 +128,10 @@ router.put('/updateComment/:id', validateupdateComment, async (req, res) => {
 				comment: updatedComment.comment,
 				tags: updatedComment.tags,
 				createdOn: updatedComment.createdOn,
-				commentedBy: updatedComment.commentedBy,
+				commentedBy: updatedComment.commentedBy.uid,
 				editedOn: updatedComment.editedOn,
 				visibility: updatedComment.visibility,
-				post: updatedComment.post,
+				post: updatedComment.post.id,
 			},
 		})
 	} catch (error) {
@@ -225,12 +225,16 @@ router.get('/getComments/:id', validategetComment, async (req, res) => {
 // delete comment
 router.delete('/deleteComment/:id', async (req, res) => {
 	try {
-		const post = await CommentModal.findOneAndDelete({
+		const comment = await CommentModal.findOneAndDelete({
 			id: req.params.id,
 		})
-		console.log(post)
+		console.log(comment)
 
-		if (!post) return res.status(404).json({ message: 'Comment not found' })
+		if (!comment)
+			return res.status(404).json({ message: 'Comment not found' })
+
+		await CommentModal.deleteOne({ _id: comment._id })
+
 		return res.status(200).json({ message: 'Comment deleted' })
 	} catch (error) {
 		return res.status(500).json({ message: 'internal server error' })
