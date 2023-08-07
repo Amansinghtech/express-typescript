@@ -78,7 +78,8 @@ router.post(
       return res.status(200).json({
         message: "added comment successfully",
         payload: {
-          commentedBy: res.locals.user._id,
+          id: newComment.id,
+          commentedBy: res.locals.user.uid,
           post: post._id,
           createdOn: newComment.createdOn,
           editedOn: newComment.editedOn,
@@ -102,7 +103,7 @@ router.put("/updateComment/:id", validateupdateComment, async (req, res) => {
 
     const updatedComment: PopuplatedComment =
       await CommentModal.findOneAndUpdate(
-        { _id: commentId },
+        { id: commentId },
         {
           $set: {
             comment: comment,
@@ -123,8 +124,14 @@ router.put("/updateComment/:id", validateupdateComment, async (req, res) => {
     return res.status(200).json({
       message: "Comment updated",
       payload: {
+        id: updatedComment.id,
         comment: updatedComment.comment,
         tags: updatedComment.tags,
+        createdOn: updatedComment.createdOn,
+        commentedBy: updatedComment.commentedBy,
+        editedOn: updatedComment.editedOn,
+        visibility: updatedComment.visibility,
+        post: updatedComment.post,
       },
     })
   } catch (error) {
@@ -132,15 +139,16 @@ router.put("/updateComment/:id", validateupdateComment, async (req, res) => {
     return res.status(500).json({ message: "Internal server error" })
   }
 })
+// get all comments
 
 router.get("/getComments/:id", validategetComment, async (req, res) => {
   try {
     const { limit, skip, sortOrder } = req.query as getCommentInput
-
-    const comments: PopuplatedComment = await CommentModal.find({
+    console.log(req.params.id)
+    const comments: PopuplatedComment[] = await CommentModal.find({
       post: req.params.id,
     })
-      .populate(["comment", "tags"])
+      .populate(["post", "commentedBy"])
       .sort({ createdOn: sortOrder })
       .limit(limit)
       .skip(skip)
@@ -155,11 +163,12 @@ router.get("/getComments/:id", validategetComment, async (req, res) => {
     return res.status(500).json({ message: "Internal server error" })
   }
 })
+
 // delete comment
 router.delete("/deleteComment/:id", async (req, res) => {
   try {
     const post = await CommentModal.findOneAndDelete({
-      _id: req.params.id,
+      id: req.params.id,
     })
     console.log(post)
 
