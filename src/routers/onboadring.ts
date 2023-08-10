@@ -103,9 +103,18 @@ router.post('/login', async (req, res) => {
 		return res.json({
 			message: 'user logged in successfully',
 			payload: {
-				email: user.email,
-				fullname: user.fullname,
-				phone: user.phone,
+				user: {
+					email: user.email,
+					fullname: user.fullname,
+					phone: user.phone,
+					uid: user.uid,
+					bio: user.bio,
+					dialCode: user.dialCode,
+					age: user.age,
+					image: user.image,
+					verified: user.verified,
+					gender: user.gender,
+				},
 				accessToken: createAccessToken({
 					email: user.email,
 				}),
