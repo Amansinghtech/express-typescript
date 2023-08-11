@@ -19,7 +19,7 @@ const createPostSchema = z.object({
 			message: 'caption must be at most 500 characters long',
 		}),
 	body: z.string().min(10).max(1000).optional(),
-	tags: z.array(z.string().min(10)).max(50).optional(),
+	tags: z.array(z.string()).max(50).optional(),
 	originalPostId: z.string().max(40).optional(),
 })
 
