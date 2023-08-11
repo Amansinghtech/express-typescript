@@ -15,6 +15,7 @@ const tokenRequired: RequestHandler = async (
 ) => {
 	try {
 		const authorization = req.headers.authorization
+
 		if (!authorization)
 			return res
 				.status(401)
@@ -22,11 +23,15 @@ const tokenRequired: RequestHandler = async (
 
 		const result = checkAccessToken<{ email: string }>(authorization)
 
+		if (!result.success) {
+			return res.status(401).json({ message: result.message })
+		}
+
 		// check if the user is in the database
 		const user = await UserSchema.findOne({
 			email: result.decoded.email,
 		})
-        //  console.log(user)
+		//  console.log(user)
 		//  console.log(result)
 		if (!user) return res.status(404).json({ message: 'User not found' })
 
@@ -37,6 +42,7 @@ const tokenRequired: RequestHandler = async (
 		res.locals.user = user
 		next()
 	} catch (error) {
+		console.log(error)
 		return res.status(500).json({ message: 'Internal Server Error' })
 	}
 }
