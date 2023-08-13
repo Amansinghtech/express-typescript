@@ -206,7 +206,11 @@ router.get('/getPost/:id', async (req, res: TokenRequiredRes) => {
 			id: req.params.id,
 		}).populate(['originalPost', 'user'])
 
-		console.log(post)
+		if (!post) {
+			return res.status(404).json({
+				message: 'Post not found',
+			})
+		}
 
 		return res.status(200).json({
 			message: 'Post fetched successfully',
