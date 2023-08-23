@@ -1,21 +1,21 @@
-FROM node:latest
+FROM node:18 as node_modules
 
-# Create app directory
-RUN mkdir -p /home/app
+WORKDIR /home/app
 
-# Set work directory    
-WORKDIR /home/app   
+COPY package.json yarn.lock ./
 
-# Copy app source code  
-
-COPY . /home/app
-
-# Install app dependencies  
 RUN yarn install
+
+FROM node_modules as build
+
+WORKDIR /home/app
+
+COPY . .
 
 ENV MONGO_URI=mongodb+srv://dbadmin:maP1HO4JZoxoG5bm@cluster0.zvuk7wj.mongodb.net/gossip?retryWrites=true&w=majority
 
-# Build app source code
 RUN yarn build
 
-CMD ["yarn", "start"]
+EXPOSE 4000
+
+ENTRYPOINT [ "yarn", "start"]
