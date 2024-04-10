@@ -179,7 +179,7 @@ router.put(
       console.log("updated post successfully")
 
       return res.status(200).json({
-        message: "Post created",
+        message: "Post updated successfully",
         payload: {
           id: post.id,
           caption: post.caption,
