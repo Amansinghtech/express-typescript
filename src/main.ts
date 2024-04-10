@@ -34,10 +34,10 @@ app.use('/protected', tokenRequired, ProtectedRoute)
 function main() {
 	// connect to mongodb
 	mongoose
-	// useUnifiedTopology: true
-	.connect(env.mongoURI,)
+		// useUnifiedTopology: true
+		.connect(env.mongoURI)
 		.then(() => {
-			console.log('connected to mongodb')
+			console.log('✅ connected to mongodb')
 			app.listen(port, () => {
 				console.log(`listening at http://localhost:${port}`)
 			})
